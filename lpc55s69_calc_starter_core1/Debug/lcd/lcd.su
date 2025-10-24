@@ -1,0 +1,3 @@
+C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core1\drivers/fsl_gpio.h:153:20:GPIO_PinWrite	24	static
+../lcd/lcd.c:16:6:lcd_switch_to	16	static
+../lcd/lcd.c:37:6:lcd_init	8	static

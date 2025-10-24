@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;lpc55s69_calc_starter_core0/source/mma8652fc2.h&apos; to &apos;mma8652fc.h&apos;" description="Rename resource &apos;mma8652fc2.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="source/mma8652fc2.h" name="mma8652fc.h" stamp="1760904074550" updateReferences="true"/>
+</session>

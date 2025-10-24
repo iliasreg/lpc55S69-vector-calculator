@@ -1,0 +1,414 @@
+/*
+ * 2023-2055 (C) E. Boucharé
+ */
+
+#include "pin_mux.h"
+#include "board.h"
+
+#include "fsl_gpio.h"
+#include "fsl_common.h"
+#include "fsl_power.h"
+
+/*******************************************************************************
+ * Mailbox and events
+ ******************************************************************************/
+#define EVT_MASK						(0xFF<<24)
+
+#define EVT_NONE						0
+#define EVT_CORE_UP						(1U<<24)
+#define EVT_RETVAL						(2U<<24)
+
+#define ASYNC_MODE 1
+#define SYNC_MODE 0
+
+/* mailbox communication between cores */
+void mb_init(void)
+{
+//  Init already done by core0
+	MAILBOX->MBOXIRQ[0].IRQCLR=0xFFFFFFFF;
+    NVIC_SetPriority(MAILBOX_IRQn, 2);
+    NVIC_EnableIRQ(MAILBOX_IRQn);
+}
+
+uint32_t mb_pop_evt(void)
+{
+	uint32_t evt=MAILBOX->MBOXIRQ[0].IRQ;
+	MAILBOX->MBOXIRQ[0].IRQCLR=evt;
+	return evt;
+}
+
+bool mb_push_evt(uint32_t evt, bool force)
+{
+	if (MAILBOX->MBOXIRQ[1].IRQ && !force) {
+		return false;
+	}
+	MAILBOX->MBOXIRQ[1].IRQSET=evt;
+	return true;
+}
+
+#ifdef LCD_CORE1
+#include "lcd.h"
+
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+typedef enum {
+	L_SOLID, L_DOTTED, L_DASHED, L_COMB, L_ARROW, L_BAR, L_FBAR,
+	L_STEP, L_FSTEP, L_NONE
+} line_t;
+
+typedef enum {
+	M_CROSS, M_PLUS, M_DOT, M_STAR, M_CIRCLE, M_FCIRCLE,
+	M_SQUARE, M_FSQUARE, M_DIAMOND, M_FDIAMOND, M_ARROW,
+	M_TRIANGLE, M_FTRIANGLE, M_NONE
+} marker_t;
+
+line_t		ltype=L_SOLID;
+marker_t	mtype=M_NONE;
+int			msize=6;
+
+/*******************************************************************************
+ * Mailbox and events
+ ******************************************************************************/
+#define EVT_DRAWPOINT					(3U<<24)
+#define EVT_DRAWLINE					(4U<<24)
+#define EVT_DRAWRECT					(5U<<24)
+#define EVT_DRAWRNDRECT					(6U<<24)
+#define EVT_DRAWCIRCLE					(7U<<24)
+#define EVT_DRAWELLISPSE				(8U<<24)
+#define EVT_DRAWLINES					(9U<<24)
+#define EVT_DRAWSEGMENTS				(10U<<24)
+#define EVT_FILLRECT					(11U<<24)
+#define EVT_CLIP						(12U<<24)
+#define EVT_UNCLIP						(13U<<24)
+#define EVT_DRAWPATH					(14U<<24)
+
+#define EVT_FORECOLOR					(15U<<24)
+#define EVT_BACKCOLOR					(16U<<24)
+#define EVT_SETFONT						(17U<<24)
+#define EVT_SETALIGNMENT				(18U<<24)
+#define EVT_SETDIRECTION				(19U<<24)
+#define EVT_DRAWSTRING					(20U<<24)
+
+#define EVT_GETBUFFER					(30U<<24)
+
+
+
+
+/* event queue */
+#define MAX_EVT_DATA				5
+typedef struct _Event {
+	uint32_t	event;
+	uint32_t	data[MAX_EVT_DATA];
+} Event;
+
+/* event queue handling */
+#define MAX_EVTS					20
+
+volatile Event evq[MAX_EVTS];
+volatile int evq_rd=0, evq_wr=0;
+
+bool next_event(Event *evt)
+{
+	if (evq_rd==evq_wr) return false;
+
+	*evt=evq[evq_rd];
+	evq_rd=(evq_rd+1) % MAX_EVTS;
+	return true;
+}
+
+void MAILBOX_IRQHandler(void)
+{
+	if (((evq_wr+1)%MAX_EVTS)!=evq_rd) {
+		evq[evq_wr].event = mb_pop_evt();
+		evq_wr=(evq_wr+1) % MAX_EVTS;
+	}
+}
+
+/*******************************************************************************
+ * shared buffer
+ ******************************************************************************/
+// ASYNCHRONUS PART
+#define MAXPOINTS 2048
+#define BUFFER_CAPACITY 256
+#define TOTAL_BUFFERS 10
+
+//__attribute__ ((section(".shmem")))
+//SPoint shdata[MAXPOINTS];				/* shared data buffer */
+volatile extern SPoint __start_noinit_shmem[];
+volatile SPoint * shdata = __start_noinit_shmem;
+
+typedef struct {
+  char data[BUFFER_CAPACITY];
+} DataBuffer;
+
+volatile DataBuffer * pool;
+uint32_t current_buffer_idx;
+
+void init_DataBuffer() {
+	pool = (DataBuffer * )(shdata + MAXPOINTS);
+}
+
+/*******************************************************************************
+ * main
+ ******************************************************************************/
+
+int main(void)
+{
+    /* Init board hardware.*/
+	lcd_init();
+	lcd_switch_to(LCD_DPY);
+
+	/* Initialize mailbox, send EVT_CORE_UP to notify core 0 that core 1 is up
+     * and ready to work.
+     */
+	mb_init();
+    mb_push_evt(EVT_CORE_UP,true);
+
+
+	Event ev;
+ 	short x0, x1, y0, y1, x, y, w, h;
+ 	uint16_t high, low;
+ 	uint32_t alignment;
+	uint32_t direction;
+	Font* font;
+	int n;
+	DC dc;
+
+   	lcd_get_default_DC(&dc);
+   	for (;;) {
+		if (!next_event(&ev)){
+   			//while (!next_event(&ev)) {}
+   	    	switch (ev.event & EVT_MASK) {
+   	    	case EVT_FORECOLOR:
+   	    		dc.fcolor=(Color)(ev.event & 0x0000FFFF);
+   	    		break;
+
+   	    	case EVT_DRAWLINES:
+				#if ASYNC_MODE
+   	    			uint16_t buffer_id = ev.event & 0xFFFF;
+   	    		    if (buffer_id >= 1 && buffer_id <= ASYNC_BUFFER_COUNT) {
+   	    		        AsyncBuffer *buf = &async_buffers[buffer_id - 1];
+   	    		        SPoint *data = async_data + (buffer_id - 1) * MAX_POINTS_PER_BUFFER;
+   	    		        int n = buf->size;
+
+   	    		        // Traitement normal
+   	    		        x0 = data[0].x; y0 = data[0].y;
+   	    		        for (int i = 1; i < n; i++) {
+   	    		            x1 = data[i].x; y1 = data[i].y;
+   	    		            lcd_line(x0, y0, x1, y1, buf->color);
+   	    		            x0 = x1; y0 = y1;
+   	    		        }
+
+   	    		        // Libérer le buffer
+   	    		        async_buffers[buffer_id - 1].used = false;
+   	    		#endif
+				#if SYNC_MODE
+					n=ev.event&0xFFF;
+					x0=shdata[0].x; y0=shdata[0].y;
+					for (int i=1;i<n;i++) {
+						x1=shdata[i].x; y1=shdata[i].y;
+						lcd_line(x0,y0,x1,y1,dc.fcolor);
+						x0=x1; y0=y1;
+					}
+					mb_push_evt(EVT_RETVAL,true);
+					break;
+				#endif
+
+   	    	case EVT_DRAWSEGMENTS:
+				#if ASYNC_MODE
+   	    			uint16_t param = ev.event & 0xFFFF;
+
+   	    		    // Vérifier si c'est le nouveau format asynchrone (buffer_id dans les bits 12-15)
+   	    		    if ((param & 0xF000) != 0) {
+   	    		        // FORMAT ASYNCHRONE : utilisation des buffers
+   	    		        uint16_t buffer_id = (param >> 12) & 0xF;
+   	    		        uint16_t segment_count = param & 0xFFF;
+
+   	    		        if (buffer_id >= 1 && buffer_id <= ASYNC_BUFFER_COUNT &&
+   	    		            async_buffers[buffer_id - 1].used) {
+
+   	    		            AsyncBuffer *buf = &async_buffers[buffer_id - 1];
+   	    		            SPoint *data = async_data + (buffer_id - 1) * MAX_POINTS_PER_BUFFER;
+
+   	    		            // Utiliser la couleur du buffer
+   	    		            Color segment_color = buf->color;
+
+   	    		            // Dessiner les segments
+   	    		            for (int i = 0; i < segment_count; i++) {
+   	    		                if (2*i + 1 < buf->size) {  // Vérifier les limites
+   	    		                    x0 = data[2*i].x;
+   	    		                    y0 = data[2*i].y;
+   	    		                    x1 = data[2*i + 1].x;
+   	    		                    y1 = data[2*i + 1].y;
+   	    		                    lcd_line(x0, y0, x1, y1, segment_color);
+   	    		                }
+   	    		            }
+
+   	    		            // Libérer le buffer
+   	    		            async_buffers[buffer_id - 1].used = false;
+
+   	    		        }
+   	    		#endif
+				#if SYNC_MODE
+					n=ev.event&0xFFF;
+					for (int i=1;i<n;i++) {
+						x0=shdata[2*i].x;
+						y0=shdata[2*i].y;
+						x1=shdata[2*i+1].x;
+						y1=shdata[2*i+1].y;
+						lcd_line(x0, y0,x1,y1, dc.fcolor);
+					}
+					mb_push_evt(EVT_RETVAL, true); // Push an event to indicate the drawing operation is complete
+				#endif
+   			break;
+
+   	    	case EVT_DRAWRECT:
+
+				#if ASYNC_MODE
+   	    		 buffer = (ev.event &0x00FF0000)>>16;
+
+   	    		 x0 = (uint16_t)buffer[current_buffer_idx].data[0] | ((uint16_t)buffer[current_buffer_idx].data[1] << 8);
+				 y0 = (uint16_t)buffer[current_buffer_idx].data[2] | ((uint16_t)buffer[current_buffer_idx].data[3] << 8);
+				 w = (uint16_t)buffer[current_buffer_idx].data[4] | ((uint16_t)buffer[current_buffer_idx].data[5] << 8);
+				 h = (uint16_t)buffer[current_buffer_idx].data[6] | ((uint16_t)buffer[current_buffer_idx].data[7] << 8);
+
+				lcd_draw_rect(x0, y0, w, h, dc.fcolor);
+
+				mb_push_evt(EVT_RETVAL,true);
+				#else
+   	    		x=shdata[0].x;
+   				y=shdata[0].y;
+   				w=shdata[1].x;
+   				h=shdata[1].y;
+   				lcd_draw_rect(x, y, w, h,dc.fcolor);
+   				mb_push_evt(EVT_RETVAL,true);
+				#endif
+
+   				break;
+
+   	    	case EVT_CLIP:
+   	    		x0=shdata[0].x;
+   	    		y0=shdata[0].y;
+   	    		x1=shdata[1].x;
+   	    		y1=shdata[1].y;
+   	    		lcd_clip(x0,y0,x1, y1);
+   	    		mb_push_evt(EVT_RETVAL,true);
+   	    		break;
+
+   	    	case EVT_UNCLIP:
+   	    		lcd_unclip();
+   	    	break;
+
+   	    	case EVT_SETFONT:
+   	    		font=(Font * )(ev.event&0xFFFFFFFF);
+   	    		lcd_set_font(&dc,font);
+   	    		break;
+
+   	    	case EVT_SETALIGNMENT:
+   	    		high = shdata[0].x;
+   	    		low = shdata[0].y;
+   	    		alignment = ((uint32_t)high << 16) | low;
+
+   	    		lcd_set_alignment(&dc,alignment);
+   	    		break;
+
+   	    	case EVT_SETDIRECTION:
+   	    		high = shdata[0].x;
+				low = shdata[0].y;
+				direction = ((uint32_t)high << 16) | low;
+
+   	    		lcd_set_direction(&dc,direction);
+   				break;
+
+   	    	case EVT_DRAWSTRING:
+   	    		x0=shdata[0].x; y0=shdata[0].y;
+   	    		n = ev.event&0xFFFF;
+   	    		int dataIndex = 1;
+   	    		char *my_str = NULL;
+   	    		my_str = (char *)malloc((n) * sizeof (char));
+   	    		if (my_str != NULL) {
+   	    			for (int i=0; i<n; i+=2){
+   	    				my_str[i] = (char) (shdata [dataIndex].x);
+   	    				my_str[i+1] = (char) (shdata [dataIndex].y);
+   	    				dataIndex++;
+   	    				}
+   	    		}
+   	    		lcd_draw_string(&dc, x0, y0, my_str);
+   	    		mb_push_evt (EVT_RETVAL, true);
+   	    		free (my_str);
+   	    		break;
+
+   	    	case EVT_FILLRECT:
+   	    	    x = shdata[0].x;
+   	    	    y = shdata[0].y;
+   	    	    w = shdata[1].x;
+   	    	    h = shdata[1].y;
+
+   	    	    lcd_fill_rect(x, y, w, h, dc.fcolor);
+
+   	    	    mb_push_evt(EVT_RETVAL, true);
+
+   	    	    break;
+
+   	    		//mb_push_evt(EVT_RETVAL,true);
+   	    		//break;
+   	    	default:
+   	    		break;
+   	    	}
+   	    		    }
+   	    	}
+   	    	} else {
+   	    		__WFI();
+   	    	}
+   	    		    return 0;
+   	}
+}
+
+
+#else
+/*******************************************************************************
+ * TEST APP: BLINK A LED
+ ******************************************************************************/
+#define LED_INIT()                   \
+    gpio_pin_config_t led_config = { \
+        kGPIO_DigitalOutput,         \
+        0,                           \
+    };                               \
+    GPIO_PinInit(GPIO, BOARD_LED_RED_GPIO_PORT, BOARD_LED_RED_GPIO_PIN, &led_config);
+#define LED_TOGGLE() GPIO_PortToggle(GPIO, BOARD_LED_RED_GPIO_PORT, 1u << BOARD_LED_RED_GPIO_PIN);
+
+/*******************************************************************************
+ * main
+ ******************************************************************************/
+int main(void)
+{
+    /* Initialize mailbox, send EVT_CORE_UP to notify core 0 that core 1 is up
+     * and ready to work.
+     */
+  	mb_init();
+    mb_push_evt(EVT_CORE_UP,true);
+
+    /* enable clock for GPIO */
+    CLOCK_EnableClock(kCLOCK_Gpio0);
+    CLOCK_EnableClock(kCLOCK_Gpio1);
+    BOARD_InitBootPins();
+   /* Make a noticable delay after the reset */
+    /* Use startup parameter from the master core... */
+    for (int i = 0; i < 2; i++)
+    {
+        SDK_DelayAtLeastUs(1000000U, 150000000L);
+    }
+
+    /* Configure LED */
+    LED_INIT();
+
+    for (;;)
+    {
+        SDK_DelayAtLeastUs(500000U, 150000000L);
+        LED_TOGGLE();
+    }
+    return 0;
+}
+#endif

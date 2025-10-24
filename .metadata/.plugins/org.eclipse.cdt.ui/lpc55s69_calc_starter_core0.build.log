@@ -1,0 +1,62 @@
+15:24:47 **** Incremental Build of configuration Debug for project lpc55s69_calc_starter_core0 ****
+make -r -j12 all 
+Building file: ../source/sysdep.c
+Invoking: MCU C Compiler
+arm-none-eabi-gcc -std=c17 -DCPU_LPC55S69JBD100 -DLCD_CORE1 -DMULTICORE_APP=1 -DUSE_HS_SPI=1 -DBOARD_USE_CODEC=1 -DSDK_I2C_BASED_COMPONENT_USED=1 -DCODEC_WM8904_ENABLE -DSD_ENABLED -DEMBED -DFLOAT32 -DCPU_LPC55S69JBD100_cm33 -DCPU_LPC55S69JBD100_cm33_core0 -DFSL_RTOS_BM -DSDK_OS_BAREMETAL -DSDK_DEBUGCONSOLE=0 -DCR_INTEGER_PRINTF -DPRINTF_FLOAT_ENABLE=0 -DSERIAL_PORT_TYPE_UART=1 -D__MCUXPRESSO -D__USE_CMSIS -DDEBUG -D__NEWLIB__ -D__MULTICORE_MASTER -D__MULTICORE_MASTER_SLAVE_M33SLAVE -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\lcd" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\osa" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\sdmmc\inc" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\drivers" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\utilities" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\uart" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\serial_manager" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\fatfs\source" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\sdmmc\host" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\lists" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\startup" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\device" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\board" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\CMSIS" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\source" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\codec\port\wm8904" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\codec\port" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\i2c" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\codec" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\sdmmc\osa" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\osa" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\sdmmc\inc" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\drivers" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\utilities" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\uart" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\serial_manager" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\fatfs\source" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\sdmmc\host" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\lists" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\startup" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\device" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\board" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\CMSIS" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\source" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\codec\port\wm8904" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\codec\port" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\component\i2c" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\codec" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\lcd" -I"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\LPC55S69\drivers" -O0 -fno-common -g3 -gdwarf-4 -Wall -c -ffunction-sections -fdata-sections -ffreestanding -fno-builtin -fmerge-constants -fmacro-prefix-map="../source/"= -mcpu=cortex-m33 -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -D__NEWLIB__ -fstack-usage -MMD -MP -MF"source/sysdep.d" -MT"source/sysdep.o" -MT"source/sysdep.d" -o "source/sysdep.o" "../source/sysdep.c"
+In file included from ../source/sysdep.c:36:
+../source/mma8652fc.h:14:9: warning: "I2C4" redefined
+   14 | #define I2C4                            ((I2C_Type *)FLEXCOMM4)
+      |         ^~~~
+In file included from C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\device/fsl_device_registers.h:24,
+                 from C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\drivers/fsl_common.h:22,
+                 from C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\utilities/fsl_debug_console.h:25,
+                 from ../source/sysdep.c:18:
+C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\device/LPC55S69_cm33_core0.h:11593:11: note: this is the location of the previous definition
+11593 |   #define I2C4                                     ((I2C_Type *)I2C4_BASE)
+      |           ^~~~
+../source/sysdep.c: In function 'sys_wait':
+../source/sysdep.c:464:30: warning: variable 'c' set but not used [-Wunused-but-set-variable]
+  464 |                         char c;
+      |                              ^
+../source/sysdep.c: In function 'g_draw_path2d':
+../source/sysdep.c:1676:27: warning: unused variable 'y1' [-Wunused-variable]
+ 1676 |         short x0, x1, y0, y1;
+      |                           ^~
+../source/sysdep.c:1676:23: warning: unused variable 'y0' [-Wunused-variable]
+ 1676 |         short x0, x1, y0, y1;
+      |                       ^~
+../source/sysdep.c:1676:19: warning: unused variable 'x1' [-Wunused-variable]
+ 1676 |         short x0, x1, y0, y1;
+      |                   ^~
+../source/sysdep.c:1676:15: warning: unused variable 'x0' [-Wunused-variable]
+ 1676 |         short x0, x1, y0, y1;
+      |               ^~
+../source/sysdep.c: At top level:
+../source/sysdep.c:510:13: warning: 'sd_info' defined but not used [-Wunused-function]
+  510 | static void sd_info(sd_card_t *card)
+      |             ^~~~~~~
+Finished building: ../source/sysdep.c
+ 
+Building target: lpc55s69_calc_starter_core0.axf
+Invoking: MCU Linker
+arm-none-eabi-gcc -nostdlib -L"C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core0\LPC55S69\mcuxpresso" -Xlinker -Map="lpc55s69_calc_starter_core0.map" -Xlinker --gc-sections -Xlinker -print-memory-usage -Xlinker --sort-section=alignment -Xlinker --cref -mcpu=cortex-m33 -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -T lpc55s69_calc_starter_core0_Debug.ld -o "lpc55s69_calc_starter_core0.axf" ./utilities/fsl_assert.o ./utilities/fsl_debug_console.o ./utilities/fsl_str.o  ./startup/boot_multicore_slave.o ./startup/startup_lpc55s69_cm33_core0.o  ./source/calc.o ./source/dsp.o ./source/edit.o ./source/funcs.o ./source/graphics.o ./source/io.o ./source/mma8652fc.o ./source/scan.o ./source/semihost_hardfault.o ./source/solver.o ./source/spread.o ./source/stack.o ./source/sysdep.o ./source/sysdep_pcm.o  ./sdmmc/src/fsl_sd.o ./sdmmc/src/fsl_sdmmc_common.o  ./sdmmc/osa/fsl_sdmmc_osa.o  ./sdmmc/host/fsl_sdmmc_host.o  ./lcd/fonts/fixed12.o ./lcd/fonts/fixed16.o ./lcd/fonts/fixed20.o ./lcd/fonts/fixed24.o ./lcd/fonts/fixed8.o  ./fatfs/source/diskio.o ./fatfs/source/ff.o ./fatfs/source/ffsystem.o ./fatfs/source/ffunicode.o  ./drivers/fsl_clock.o ./drivers/fsl_common.o ./drivers/fsl_common_arm.o ./drivers/fsl_ctimer.o ./drivers/fsl_dma.o ./drivers/fsl_flexcomm.o ./drivers/fsl_gpio.o ./drivers/fsl_i2c.o ./drivers/fsl_i2s.o ./drivers/fsl_i2s_dma.o ./drivers/fsl_power.o ./drivers/fsl_powerquad_basic.o ./drivers/fsl_powerquad_data.o ./drivers/fsl_powerquad_filter.o ./drivers/fsl_powerquad_math.o ./drivers/fsl_powerquad_matrix.o ./drivers/fsl_powerquad_transform.o ./drivers/fsl_reset.o ./drivers/fsl_sdif.o ./drivers/fsl_spi.o ./drivers/fsl_sysctl.o ./drivers/fsl_usart.o  ./device/system_LPC55S69_cm33_core0.o  ./component/uart/fsl_adapter_usart.o  ./component/serial_manager/fsl_component_serial_manager.o ./component/serial_manager/fsl_component_serial_port_uart.o  ./component/osa/fsl_os_abstraction_bm.o  ./component/lists/fsl_component_generic_list.o  ./component/i2c/fsl_adapter_flexcomm_i2c.o  ./codec/port/wm8904/fsl_codec_wm8904_adapter.o  ./codec/fsl_codec_common.o ./codec/fsl_codec_i2c.o ./codec/fsl_wm8904.o  ./board/board.o ./board/clock_config.o ./board/peripherals.o ./board/pin_mux.o  ./LPC55S69/drivers/fsl_power.o    "C:\Users\Ilias\Documents\MCUXpressoIDE_25.6.136\workspace\lpc55s69_calc_starter_core1\Debug\lpc55s69_calc_starter_core1.axf.o" -lpower_hardabi
+C:/nxp/MCUXpressoIDE_25.6.136/ide/plugins/com.nxp.mcuxpresso.tools.win32_25.6.0.202501151204/tools/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld.exe: warning: lpc55s69_calc_starter_core0.axf has a LOAD segment with RWX permissions
+Memory region         Used Size  Region Size  %age Used
+   PROGRAM_FLASH:      322092 B       576 KB     54.61%
+            SRAM:       59096 B        96 KB     60.12%
+        CALC_RAM:           0 B        96 KB      0.00%
+      SRAM_CORE1:       20756 B        48 KB     42.23%
+        SRAM4_PQ:           0 B        16 KB      0.00%
+           SRAMX:           0 B        32 KB      0.00%
+         USB_RAM:           0 B        16 KB      0.00%
+           shmem:           0 B        16 KB      0.00%
+Finished building target: lpc55s69_calc_starter_core0.axf
+ 
+Performing post-build steps
+arm-none-eabi-size "lpc55s69_calc_starter_core0.axf"; # arm-none-eabi-objcopy -v -O binary "lpc55s69_calc_starter_core0.axf" "lpc55s69_calc_starter_core0.bin" ; # checksum -p LPC55S69 -d "lpc55s69_calc_starter_core0.bin";
+   text	   data	    bss	    dec	    hex	filename
+ 319924	   2168	  56536	 378628	  5c704	lpc55s69_calc_starter_core0.axf
+ 
+
+15:24:49 Build Finished. 0 errors, 8 warnings. (took 1s.540ms)
+
